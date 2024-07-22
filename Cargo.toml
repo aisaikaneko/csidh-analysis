@@ -1,0 +1,13 @@
+[package]
+name = "csidh-demo"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+elliptic-curve = "0.13.8"
+ff = "0.13.0"
+group = "0.13.0"
+num-bigint = "0.4.6"
+num-primes = "0.3.0"
+p256 = "0.13.2"
+rand = "0.8.5"
