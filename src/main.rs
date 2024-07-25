@@ -6,7 +6,6 @@ extern crate ff;
 use num_bigint::BigUint;
 use num_primes::Generator;
 use rand::Rng;
-use ff::PrimeField;
 
 // Represents an element of a finite field
 struct FiniteFieldElement {
@@ -21,7 +20,7 @@ struct FiniteFieldElement {
         Self { value, modulus };
     }
 
-    fn add(&self, other: &self) -> Self {
+    fn add(&self, other: &Self) -> Self {
         Self::new((&self.value + &other.value) % &self.modulus, self.modulus.clone())
     }
 
@@ -30,11 +29,26 @@ struct FiniteFieldElement {
     }
 
     fn mul(&self, other: &Self) -> Self {
-        Self::new((&self.value * &other.value) % &self.modulus, self.modolus.clone())
+        Self::new((&self.value * &other.value) % &self.modulus, self.modulus.clone())
     }
 
     fn inv(&self) -> Self {
         Self::new(self.value.modpow(&(&self.modulus -2u32), &self.modulus), self.modulus.clone())
+    }
+}
+
+#[derive(Debug, Clone)]
+struct FiniteField {
+    modulus: BigUint,
+}
+
+impl FiniteField {
+    fn new(modulus: BigUint) -> Self {
+        Self { modulus }
+    }
+
+    fn element(&self, value: BigUint) -> FiniteFieldElement {
+        FiniteFieldElement::new(value, self.modulus.clone())
     }
 }
 
@@ -68,17 +82,38 @@ impl EllipticCurvePoint {
     fn new(x: FiniteFieldElement, y: FiniteFieldElement, a: FiniteFieldElement) -> Self {
         Self { x, y, a }
     }
-    // MORE TO DO HERE
+
+    fn add(&self, other: &Self) -> Self {
+        if self.x.value == other.x.value && self.y.value == other.y.value {
+            return self.double();
+        }
+
+        let lambda = (other.y.sub(&self.y)).mul(&other.x.sub(&self.x).inv());
+        let x3 = lambda.mul(&lambda).sub(&self.x).sub(&other.x);
+        let y3 = lambda.mul(&self.x.sub(&x3)).sub(&self.y);
+
+        Self::new(x3, y3, self.a.clone())
+    }
+
+    fn double(&self) -> Self {
+        let two = FiniteFieldElement::new(BigUint::from(2u32), self.x.modulus.clone());
+        let three = FiniteFieldElement::new(BigUint::from(3u32), self.x.modulus.clone());
+        let lambda = self.x.mul(&self.x).mul(&three).add(&self.a).mul(&two.mul(&self.y).inv());
+        let x3 = lambda.mul(&lambda).sub(&self.x).sub(&self.x);
+        let y3 = lambda.mul(&self.x.sub(&x3)).sub(&self.y);
+
+        Self::new(x3, y3, self.a.clone())
+    }
 }
 
 
 // Generate parameters for the CSIDH protocol
-fn gen_params(n: u32, a: i64) {
+fn gen_params(n: usize, a: BigUint) -> (BigUint, Vec<BigUint>, FiniteField, EllipticCurve) {
     // Get the list of n primes
     let mut l_primes: Vec<BigUint> = Generator::new_prime_iterator().take(n + 1).skip(1).collect();
     
     // Generate the parameter p from the list of primes
-    let mut p = 4u64;
+    let mut p = BigUint::from(4u64);
     for prime in &l_primes {
         p *= prime;
     }
@@ -86,10 +121,22 @@ fn gen_params(n: u32, a: i64) {
 
     // Ensure that p is prime
     while !num_primes::Verification::is_prime(&p) {
-        let x = Generator::new_prime(&l_primes[lprimes.len() - 1] + 1);
+        let x = Generator::new_prime(&l_primes[l_primes.len() - 1] + 1);
         l_primes.push(x.clone());
-        p = (&p + 1u64) * &x - 1u64);
+        p = (&p + 1u64) * &x - 1u64;
     }
 
-    let e0 = 
+    let F = FiniteField::new(p.clone());
+    let E0 = EllipticCurve::new(F.clone(), a);
+
+    (p, l_primes, F, E0)
+}
+
+fn gen_key(n: usize, m: i64) -> Vec<i64> {
+    let mut rng = rand::thread_rng();
+    (0..n).map(|_| rng.gen_range(-m..=m)).collect()
+}
+
+fn main() {
+    println!("Main method executed");
 }
