@@ -17,5 +17,3 @@ def gen_params(n, A):
 # Generate the private key to be used in the encryption.
 def gen_key(n, A, m):
     return {"private":[randint(-m, m) for _ in range(n)], "public":A}
-
-

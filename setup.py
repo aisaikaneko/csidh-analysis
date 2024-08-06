@@ -1,5 +1,5 @@
 from sage.all import *
-from csidh import *
+from gen_params_and_key import *
 
 def setup_csidh(n, A, m):
     p, l_primes, F, E0 = gen_params(n, A)
@@ -8,3 +8,4 @@ def setup_csidh(n, A, m):
     
     key_pair = gen_key(n, A, m)
     return (parameters, key_pair)
+
