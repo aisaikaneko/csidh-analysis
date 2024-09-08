@@ -1,49 +1,44 @@
 from sage.all import *
+import random as rand
 
-# Set the 
-def run_csidh(n, A, B, m):
-    p, l_primes, F, E0 = gen_params(n, A)
-    parameters = [p, l_primes, F, E0]
-    n = len(l_primes)
-    
-    a_key_pair = gen_key(n, A, m)
-    b_key_pair = gen_key(n, B, m)
+# Converts a curve of the form y^2 = x^3 + Ax^2 + x to Weierstrauss form
+def convert_to_weierstrauss(A):
+    a = (3 - A**2) * pow(3 * 1, -1, p)
+    b = (2 * A**3 - 9*A) * pow(27 * 1, -1, p)
+    return EllipticCurve(F, [a, b])
 
-# the field F, base curve E0, and small primes l_primes.
-def gen_params(n, A):
-    l_primes = primes_first_n(n+1)[1:]
+# Converts a curve from Weierstrauss form back to the form y^2 + x^3 + Ax^2 + x
+def convert_from_weierstrauss(E):
+    a = E.a4()
+    b = E.a6()
+    R = PolynomialRing(F, name="z")
+    roots = (z**3 + z*z + b).roots()
+    r = roots[0][0]
+    s = (3*s**2 + a).sqrt() ** (-1)
+    return -3 * (-1)**s.is_square() * r * s
+
+# Generate the parameters l_primes, p, and F_p for the key exchange
+def gen_params(n):
+    l_primes = primes_first_n(n + 1)[1:]
     p = 4 * prod(l_primes) - 1
     while not is_prime(p):
-        x = next_prime(l_primes[-1]+1)
+        x = next_prime(l_primes[-1] + 1)
         l_primes.append(x)
         p = (p + 1) * x - 1
-    
+
     F = GF(p)
-    E0 = EllipticCurve(F, [A, 0])
+    return l_primes, p, F
 
-    return p, l_primes, F, E0
+# Generate the private and public keys for the key exchange
+def gen_key(self, curve, m):
+    return {
+        "private": [random.randint(-m, m) for _ in range(self.n)],
+        "public": curve
+    }
 
-# Verify the supersingularity of the curve generated as a parameter.
-# Returns 0 if ordinary and 1 if supersingular.
-def verify_supersing(p, l_primes, F, E0):
-    P = E0.random_point()
-    d = 1
+# Apply the class group action on the curve
+def group_action(key):
+    e_list = key["private"]
+    A = key["public"]
+    E = get_curve(A)
 
-    for li in l_primes:
-        Q = ((p + 1) // li) * P  # Note: use integer division here
-        if li * Q == E0(0):
-            return 0
-        if Q != E0(0):
-            d = li * d
-            if d > 4 * (p**(1/2)):
-                return 1
-    return 0
-
-# Perform the key exchange.
-def derive_secret(pair, pub_key):
-    pass
-    
-
-# Generate the private key to be used in the encryption.
-def gen_key(n, A, m):
-    return {"private":[randint(-m, m) for _ in range(n)], "public":A}
