@@ -45,7 +45,7 @@ def group_action(key):
     A = key["public"]
     E = convert_to_weierstrauss(A)
     
-    if e != 0:
+    if not (all*e == 0 for e in e_list):
         S = []
         while S == []:
             x = F.random_element()
@@ -86,6 +86,8 @@ for _ in range(100):
     bob_pub = group_action({"public": 0, "private": bob_priv})
     alice_shared = group_action({"public": bob_pub, "private": alice_priv})
     bob_shared = group_action({"public": alice_pub, "private": bob_priv})
+    print(alice_shared)
+    print(bob_shared)
     print(alice_shared == bob_shared)
 
 
