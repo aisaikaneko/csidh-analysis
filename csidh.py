@@ -5,8 +5,8 @@ class CSIDH():
     def __init__(self, n):
         self.n = n
         self.l_primes, self.p, self.F = self.gen_params(n)
-        self.a_key = self.gen_key(5)
-        self.b_key = self.gen_key(5)
+        self.a_key = self.gen_key(n)
+        self.b_key = self.gen_key(n)
 
     # Generate the parameters l_primes, p, and F_p for the key exchange
     def gen_params(self, n):
@@ -56,10 +56,63 @@ class CSIDH():
         E = self.convert_to_weierstrauss(A)
         p = self.p
         F = self.F
+        l_primes = self.l_primes
         
         # Return the base curve if each e_i = 0
         if all(e == 0 for e in e_list):
             return A
 
         # Apply the ideal corresponding to each prime l_i and exponent e_i
-        
+        while True:
+            if all(e == 0 for e in e_list):
+                break
+            x = F.random_element()
+            while x.is_zero():
+                x = F.random_element()
+            r = F(x**3 + A*x**2 + x)
+            s = kronecker_symbol(r, p)
+            assert (2 * is_square(r)) - 1 == s
+            S = [i for i, e in enumerate(e_list) if sign(e) == s]
+            if len(S) == 0:
+                continue
+            if s == -1:
+                E = E.quadratic_twist()
+            while True:
+                y = E.random_element()
+                if not y.is_zero():
+                    break
+            x = y.xy()[0]
+            k = prod(l_primes[i] for i in S)
+            P = E.lift_x(x)
+            assert (p + 1) % k == 0
+            Q = ((p + 1) // k) * P
+            for i in S:
+                assert k % l_primes[i] == 0
+                R = (k // l_primes[i]) * Q
+                if R.is_zero():
+                    continue
+                phi = E.isogeny(R)
+                E = phi.codomain()
+                Q = phi(Q)
+                assert k % l_primes[i] == 0
+                k = k // l_primes[i]
+                e_list[i] -= s
+            if s == -1:
+                E = E.quadratic_twist()
+        return self.convert_from_weierstrauss(E)
+
+# Test the algorithm
+def test_program():
+    for i in range(5, 100):
+        csidh = CSIDH(i)
+        print(csidh.a_key)
+        print(csidh.b_key)
+        A = csidh.a_key["public"]
+        B = csidh.b_key["public"]
+        A_priv = csidh.a_key["private"]
+        B_priv = csidh.b_key["private"]
+        alice_shared = csidh.group_action({"public":B, "private":A_priv})
+        bob_shared = csidh.group_action({"public":A, "private":B_priv})
+        print(alice_shared)
+        print(bob_shared)
+        assert alice_shared == bob_shared
