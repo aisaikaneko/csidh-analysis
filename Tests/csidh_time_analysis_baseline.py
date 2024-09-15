@@ -9,7 +9,7 @@ import json
 sys.path.append("..")
 from csidh import *
 
-N = 25   # Number of trials to average per value of n
+N = 100   # Number of trials to average per value of n
 
 # Measure the time taken to derive the shared secret for various parameters
 def get_time(n):
