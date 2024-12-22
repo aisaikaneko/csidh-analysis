@@ -62,60 +62,32 @@ class CSIDH():
         l_primes = self.l_primes                    # List of small primes
         
         # Return the base curve if each e_i = 0
-        if all(e == 0 for e in e_list) and all(f == 0 for f in f_list)):
+        if all(e == 0 for e in e_list) and all(f == 0 for f in f_list):
             return A
 
-        # Apply the ideal corresponding to each prime l_i and exponent e_i
-        # Uses a loop structure to apply each idela the right number of times until no more exponents remain
-        while True:
-            # If no exponent is positive, then end and return E
-            if all(e == 0 for e in e_list) and all(f == 0 for f in f_list):
-                break
-
-            # Get a non-zero random element of F
-            x = F.random_element()
-            while x.is_zero():
-                x = F.random_element()
-
-            # Set s to the Kronecker symbol of r for p
-            r = F(x**3 + A*x**2 + x)
-            s = kronecker_symbol(r, p)
-            assert (2 * is_square(r)) - 1 == s
-
-            # Create a set of all non-zero indices
-            S = [i for i, e in enumerate(e_list) if sign(e) == s]
-            for i, f in enumerate(f_list) if sign(f) == s:
-
-            if len(S) == 0:
-                continue
-            if s == -1:
-                E = E.quadratic_twist()
-            
-            # Get a random point on the curve and get the product of all elements
-            while True:
-                y = E.random_element()
-                if not y.is_zero():
-                    break
-            x = y.xy()[0]
-            k = prod(l_primes[i] for i in S)
-            P = E.lift_x(x)
-
-            # Ensure that p + 1 divides k and define Q = ((p + 1) / k) * P
-            assert (p + 1) % k == 0
-            Q = ((p + 1) // k) * P
-
-            # Apply the isogeny corresponding to each l_prime power to compute E_B
-            for i in S:
-                assert k % l_primes[i] == 0
-                R = (k // l_primes[i]) * Q
-                if R.is_zero():
-                    continue
-                phi = E.isogeny(R)
+        # Iterate over each prime and apply isogenies
+        for i, l in enumerate(l_primes):
+            # Apply real isogenies based on e_i
+            for _ in range(e_list[i]):
+                # Select a random point on E
+                while True:
+                    P = E.random_point()
+                    if not P.is_zero():
+                        break
+                # Compute the isogeny
+                phi = E.isogeny(P)
                 E = phi.codomain()
-                Q = phi(Q)
-                assert k % l_primes[i] == 0
-                k = k // l_primes[i]
-                e_list[i] -= s
-            if s == -1:
-                E = E.quadratic_twist()
+
+            # Apply dummy isogenies based on f_i
+            for _ in range(f_list[i]):
+                # Select a random point on E
+                while True:
+                    P = E.random_point()
+                    if not P.is_zero():
+                        break
+                # Compute a dummy isogeny
+                phi = E.isogeny(P)
+                E = phi.codomain()
+
+        # Convert back from Weierstrauss form
         return self.convert_from_weierstrauss(E)
