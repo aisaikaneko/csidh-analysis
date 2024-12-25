@@ -1,7 +1,7 @@
 from sage.all import *
 import random as rand
 
-class CSIDH():
+class CSIDH_CT():
     def __init__(self, n):
         self.n = n
         self.l_primes, self.p, self.F = self.gen_params(n)
@@ -60,34 +60,49 @@ class CSIDH():
         p = self.p                                  # The prime to use for the group acton
         F = self.F                                  # Prime field with orer p
         l_primes = self.l_primes                    # List of small primes
-        
+        k = 4
+
         # Return the base curve if each e_i = 0
-        if all(e == 0 for e in e_list) and all(f == 0 for f in f_list):
-            return A
+        while True:
+            # Ensure that real and/or dummy isogenies still need to be applied
+            if all(e == 0 for e in e_list) and all(f == 0 for f in f_list):
+                break
 
-        # Iterate over each prime and apply isogenies
-        for i, l in enumerate(l_primes):
-            # Apply real isogenies based on e_i
-            for _ in range(e_list[i]):
-                # Select a random point on E
-                while True:
-                    P = E.random_point()
-                    if not P.is_zero():
-                        break
-                # Compute the isogeny
-                phi = E.isogeny(P)
-                E = phi.codomain()
+            # Get a random point on the curve
+            while True:
+                y = E.random_element()
+                if not y.is_zero():
+                    break
+            x = y.xy()[0]
+            P = E.lift_x(x)
+            P = k*P
 
-            # Apply dummy isogenies based on f_i
-            for _ in range(f_list[i]):
-                # Select a random point on E
-                while True:
-                    P = E.random_point()
-                    if not P.is_zero():
-                        break
-                # Compute a dummy isogeny
-                phi = E.isogeny(P)
-                E = phi.codomain()
+            # Generate the set S of indices to compute as real or dummy isogenies
+            S = []
+            for i in range(len(e_list)):
+                if e_list[i] != 0 or f_list[i] != 0:
+                    S.append(i)
+
+            # Compute the real and/or dummy isogenies for each i in S
+            for i in S:
+                m = 1
+                for j in S:
+                    if j > i:
+                        m *= j
+                K = m*P
+
+                # Apply real and/or dummy isogenies in the same loop
+                if not K.is_zero():
+                    if e_list[i] != 0:
+                        phi = E.isogeny(K)
+                        E = phi.codomain()
+                        P = phi(P)
+                        e_list[i] -= 1
+                    else:
+                        P = l_primes[i]*P
+                        f_list[i] -= 1
+                    if e_list[i] == 0 and f_list[i] == 0:
+                        k = k * l_primes[i]
 
         # Convert back from Weierstrauss form
         return self.convert_from_weierstrauss(E)
