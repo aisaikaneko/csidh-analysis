@@ -20,9 +20,13 @@ This repository provides implementations and analysis of the CSIDH algorithm. CS
 
 The CSIDH algorithm was introduced in the 2018 paper by Castryck, Lange, Martindale, Panny, and Renes (see [Castryck et al., 2018]). The algorithm defines a group action over supersingular elliptic curves and uses this action to facilitate a post-quantum key exchange protocol. Below is a representation of the group action in pseudocode, as described in the original paper, which is implemented in the `csidh.py` file.
 
+![image](https://github.com/user-attachments/assets/39e5b3e6-e10b-4946-bdb1-4ee11225d916)
+
 ### Constant-Time CSIDH
 
 The constant-time variant of CSIDH was proposed to address vulnerabilities related to timing attacks. This approach introduces "dummy isogenies" to ensure that the runtime does not vary based on secret inputs. The algorithm and its analysis are detailed in the paper by Meyer, Campos, and Reith (see [Meyer et al., 2018]). Below is the pseudocode for the modified algorithm, which forms the basis of the implementation in `csidh_ct.py`.
+
+![image](https://github.com/user-attachments/assets/534ea93a-6097-41a8-b01e-5cde7d33728e)
 
 ## References
 
