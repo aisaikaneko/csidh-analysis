@@ -5,8 +5,8 @@ class CSIDH_CT():
     def __init__(self, n):
         self.n = n
         self.l_primes, self.p, self.F = self.gen_params(n)
-        self.a_key = self.gen_key(n)
-        self.b_key = self.gen_key(n)
+        self.a_key = self.gen_key(5)
+        self.b_key = self.gen_key(5)
 
     # Generate the parameters l_primes, p, and F_p for the key exchange
     def gen_params(self, n):
@@ -87,8 +87,7 @@ class CSIDH_CT():
             for i in S:
                 m = 1
                 for j in S:
-                    if j > i:
-                        m *= j
+                    m *= l_primes[j]
                 K = m*P
 
                 # Apply real and/or dummy isogenies in the same loop
