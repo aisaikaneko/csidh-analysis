@@ -132,7 +132,7 @@ def main():
     os.makedirs(results_dir, exist_ok=True)
     
     # Define the range of key sizes and the number of iterations per size
-    n_values = list(range(5, 11))
+    n_values = list(range(5, 21))
     iterations = 100
     
     # Run tests for the non–constant-time implementation (csidh)

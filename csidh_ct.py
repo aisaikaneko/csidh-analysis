@@ -77,9 +77,9 @@ class CSIDH_CT():
             P = E.lift_x(x)
             P = k*P
 
-            # Generate the set S of indices to compute as real or dummy isogenies
+            # Compute the product of all l_primes for the isogeny computation
             S = []
-            for i in range(len(e_list)):
+            for i in range(0, len(l_primes)):
                 if e_list[i] != 0 or f_list[i] != 0:
                     S.append(i)
 
@@ -87,7 +87,8 @@ class CSIDH_CT():
             for i in S:
                 m = 1
                 for j in S:
-                    m *= l_primes[j]
+                    if j > i:
+                        m *= l_primes[j]
                 K = m*P
 
                 # Apply real and/or dummy isogenies in the same loop

@@ -1,0 +1,31 @@
+{
+    "CSIDH": {
+        "measurements": [
+            {
+                "n": 5,
+                "iteration": 0,
+                "time": 0.014612281000154326,
+                "key_magnitude": 17,
+                "a_key": {
+                    "private": [
+                        5,
+                        4,
+                        -3,
+                        -5,
+                        0
+                    ],
+                    "public": "49794"
+                },
+                "b_key": {
+                    "private": [
+                        -2,
+                        4,
+                        -2,
+                        -1,
+                        -5
+                    ],
+                    "public": "71625"
+                },
+                "secret": "53146",
+                "parameters": {
+                    "p": 
