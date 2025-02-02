@@ -14,8 +14,8 @@ class CSIDH_CT():
         p = 4 * prod(l_primes) - 1
         while not is_prime(p):
             x = next_prime(l_primes[-1] + 1)
-            l_primes.append(x)
-            p = (p + 1) * x - 1
+            l_primes[-1] = x
+            p = 4 * prod(l_primes) - 1
 
         F = GF(p)
         return l_primes, p, F
