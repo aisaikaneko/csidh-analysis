@@ -32,6 +32,18 @@ def key_magnitude(private_key_vector):
     return sum(abs(x) for x in private_key_vector)
 
 
+# Makes a SageMath class serializable by converting it to a normal integer
+def make_json_serializable(obj):
+    if isinstance(obj, dict):
+        return {make_json_serializable(k): make_json_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [make_json_serializable(i) for i in obj]
+    elif hasattr(obj, 'is_Integer') and obj.is_Integer():
+        return int(obj)
+    else:
+        return obj
+
+
 # Run tests for csidh or csidh_ct depending on the value of impl_class
 def run_tests(impl_class, n_values, iterations, label):
     measurements = []
@@ -166,7 +178,7 @@ def main():
     }
     json_file = os.path.join(results_dir, "csidh_key_time_correlation_data.json")
     with open(json_file, "w") as f:
-        json.dump(all_data, f, indent=4)
+        json.dump(make_json_serializable(all_data), f, indent=4)
     print(f"Results saved to {json_file}")
 
 
