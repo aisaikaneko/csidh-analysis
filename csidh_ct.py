@@ -97,8 +97,12 @@ class CSIDH_CT():
                         phi = E.isogeny(K)
                         E = phi.codomain()
                         P = phi(P)
+                        Discard = l_primes[i]*P
                         e_list[i] -= 1
                     else:
+                        phi = E.isogeny(K)
+                        Discard = phi.codomain()
+                        Discard = phi(P)
                         P = l_primes[i]*P
                         f_list[i] -= 1
                     if e_list[i] == 0 and f_list[i] == 0:
