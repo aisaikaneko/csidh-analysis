@@ -22,6 +22,8 @@ def test_program():
         B_priv = csidh.b_key["private"]
         alice_shared = csidh.group_action({"public":B, "private":A_priv})
         bob_shared = csidh.group_action({"public":A, "private":B_priv})
+        print(alice_shared)
+        print(bob_shared)
         assert alice_shared == bob_shared
         data["trials"][i] = {"A": int(A), "B": int(B), "A_priv": A_priv, "B_priv": B_priv, "A_shared": int(alice_shared), "B_shared": int(bob_shared), "result": alice_shared == bob_shared}
 
