@@ -5,8 +5,8 @@ class CSIDH():
     def __init__(self, n):
         self.n = n
         self.l_primes, self.p, self.F = self.gen_params(n)
-        self.a_key = self.gen_key(n)
-        self.b_key = self.gen_key(n)
+        self.a_key = self.gen_key(5)
+        self.b_key = self.gen_key(5)
 
     # Generate the parameters l_primes, p, and F_p for the key exchange
     def gen_params(self, n):

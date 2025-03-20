@@ -62,8 +62,8 @@ def run_experiment(Implementation, n_val, iterations=50):
 
 def main():
     # List of N values (minimum number of primes)
-    N_values = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
-    iterations = 50
+    N_values = [20, 40, 60, 80, 100]
+    iterations = 5
 
     # To store average times for each N for CSIDH and CSIDH_CT
     csidh_avg_times = []
@@ -87,15 +87,26 @@ def main():
 
         print(f"N = {n}: CSIDH average time = {avg_time:.6f} s, CSIDH_CT average time = {avg_time_ct:.6f} s")
 
-    # Create an exponential model to estimate the asymptotic time consumption of the algorithm
+    # Exponential model: y = a * exp(b * x)
     def exp_func(x, a, b):
         return a * np.exp(b * x)
     
     N_values_np = np.array(N_values)
     csidh_avg = np.array(csidh_avg_times)
     csidh_ct_avg = np.array(csidh_ct_avg_times)
-    csidh_params, _ = curve_fit(exp_func, N_values_np, csidh_avg)
-    csidh_ct_params, _ = curve_fit(exp_func, N_values_np, csidh_ct_avg)
+    
+    # Compute initial guess for CSIDH using a linear fit on log data
+    csidh_lin_fit = np.polyfit(N_values_np, np.log(csidh_avg), 1)
+    csidh_initial_guess = [np.exp(csidh_lin_fit[1]), csidh_lin_fit[0]]
+    
+    # Compute initial guess for CSIDH_CT similarly
+    csidh_ct_lin_fit = np.polyfit(N_values_np, np.log(csidh_ct_avg), 1)
+    csidh_ct_initial_guess = [np.exp(csidh_ct_lin_fit[1]), csidh_ct_lin_fit[0]]
+    
+    # Use the initial guesses in the curve_fit call
+    csidh_params, _ = curve_fit(exp_func, N_values_np, csidh_avg, p0=csidh_initial_guess)
+    csidh_ct_params, _ = curve_fit(exp_func, N_values_np, csidh_ct_avg, p0=csidh_ct_initial_guess)
+    
     csidh_fit = exp_func(N_values_np, *csidh_params)
     csidh_ct_fit = exp_func(N_values_np, *csidh_ct_params)
 
@@ -104,7 +115,7 @@ def main():
     plt.plot(N_values, csidh_avg_times, marker='o', label="CSIDH")
     plt.plot(N_values, csidh_ct_avg_times, marker='s', label="CSIDH_CT")
     plt.plot(N_values, csidh_fit, '--', label=f'CSIDH exp fit: y = {csidh_params[0]:.3f} * exp({csidh_params[1]:.3f} * x)')
-    plt.plot(N_values, csidh_ct_fit, '--', label=f'CSIDH-CT exp fit: y = {csidh_ct_params[0]:.3f} * exp({csidh_ct_params[1]:.3f} * x)')
+    plt.plot(N_values, csidh_ct_fit, '--', label=f'CSIDH_CT exp fit: y = {csidh_ct_params[0]:.3f} * exp({csidh_ct_params[1]:.3f} * x)')
     plt.xlabel("Minimum Number of Primes (N)")
     plt.ylabel("Average Group Action Time (seconds)")
     plt.title("Performance Comparison: CSIDH vs CSIDH_CT")
