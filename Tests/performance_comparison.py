@@ -62,8 +62,8 @@ def run_experiment(Implementation, n_val, iterations=50):
 
 def main():
     # List of N values (minimum number of primes)
-    N_values = [20, 40, 60, 80, 100]
-    iterations = 5
+    N_values = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
+    iterations = 10
 
     # To store average times for each N for CSIDH and CSIDH_CT
     csidh_avg_times = []
