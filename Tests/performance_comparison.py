@@ -18,6 +18,11 @@ results_dir = "../Results"
 if not os.path.exists(results_dir):
     os.makedirs(results_dir)
 
+# Constants for performance testing
+ivl = 5             # The interval used for values of N to test
+itr = 30            # The number of iterations to use
+N_start = 5         # First value of N to test
+N_stop = 100        # Final valuie of N to test\
 
 # Set the outer loop counter up for later
 i = 0
@@ -63,11 +68,11 @@ def run_experiment(Implementation, n_val, iterations=50):
 def main():
     # List of N values (minimum number of primes)
     N_values = []
-    for N in range(5, 101):
-        if N % 5 == 0:
+    for N in range(N_start, N_stop+1):
+        if N % ivl == 0:
             N_values.append(N)
     print(N_values)
-    iterations = 30
+    iterations = itr
 
     # To store average times for each N for CSIDH and CSIDH_CT
     csidh_avg_times = []
